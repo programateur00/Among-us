@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Juego del Impostor</title>
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: #333;
+}
+h2 { margin-bottom: 30px; color: #222; }
+#temas { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 30px; }
+#temas p { font-size: 20px; font-weight: bold; margin: 0 0 15px 0; }
+.tema-fila { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+.temaBtn { background: #4CAF50; color: white; border: none; padding: 14px 22px; border-radius: 8px; font-size: 16px; cursor: pointer; min-width: 100px; text-align: center; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.temaBtn:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,0,0,0.15); }
+#setup, #turno, #output { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+input[type="number"] { padding: 10px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; width: 150px; text-align: center; }
+button { padding: 10px 18px; border-radius: 8px; border: none; background: #4CAF50; color: white; font-size: 15px; cursor: pointer; transition: all 0.2s ease; }
+button:hover { background: #45a049; transform: translateY(-2px); }
+#output button { min-width: 140px; }
+</style>
+</head>
+<body>
+
+<h2>Juego del Impostor</h2>
+
+<div id="temas">
+    <p>Elige un tema para esta partida:</p>
+    <div class="tema-fila" id="fila1"></div>
+    <div class="tema-fila" id="fila2"></div>
+</div>
+
+<div id="setup" style="display:none;">
+    <label>Cuántos jugadores? </label>
+    <input type="number" id="numerojugadores" min="1">
+    <button id="startBtn">Iniciar</button>
+</div>
+
+<div id="turno" style="display:none; margin-top:10px;">
+    <label>Qué número de jugador eres? </label>
+    <input type="number" id="jugadorActual" min="1">
+    <button id="turnoBtn">Continuar</button>
+</div>
+
+<div id="output" style="display:none;">
+    <button id="siguienteBtn">Siguiente jugador</button>
+    <button id="terminarBtn">Terminar juego</button>
+</div>
+
+<script>
+let numerojugadores, valores=[], aleatorio, temaSeleccionado, palabraDelTema;
+let palabrasTema = {
+    "Animales":["Perro","Gato","Elefante","Tigre","Delfín"],
+    "Comida":["Pizza","Hamburguesa","Taco","Sushi","Helado"],
+    "Colores":["Rojo","Azul","Verde","Amarillo","Negro"],
+    "Países":["España","Francia","Japón","Brasil","México"],
+    "Deportes":["Fútbol","Baloncesto","Tenis","Natación","Golf"],
+    "Música":["Guitarra","Piano","Batería","Violín","Flauta"],
+    "Películas":["Titanic","Avatar","Inception","Matrix","Gladiator"],
+    "Videojuegos":["Mario","Zelda","Minecraft","Fortnite","FIFA"],
+    "Ciencia":["Átomo","Energía","Gravedad","Célula","Planeta"],
+    "Espacio":["Estrella","Planeta","Cometa","Galaxia","Meteorito"],
+    "Historia":["Egipto","Roma","Guerra","Imperio","Revolución"],
+    "Arte":["Pintura","Escultura","Dibujo","Fotografía","Mosaico"],
+    "Literatura":["Novela","Poema","Cuento","Ensayo","Biografía"],
+    "Tecnología":["Robot","Computadora","App","Internet","Smartphone"],
+    "Moda":["Vestido","Zapatos","Sombrero","Bufanda","Chaqueta"],
+    "Naturaleza":["Montaña","Río","Bosque","Playa","Desierto"],
+    "Superhéroes":["Batman","Superman","Wonder Woman","Spiderman","Ironman"],
+    "Emociones":["Felicidad","Tristeza","Miedo","Amor","Sorpresa"],
+    "Transporte":["Coche","Avión","Tren","Barco","Bicicleta"],
+    "Instrumentos":["Guitarra","Piano","Batería","Saxofón","Violín"]
+};
+
+const divTemas=document.getElementById("temas");
+const fila1=document.getElementById("fila1");
+const fila2=document.getElementById("fila2");
+
+let contador=0;
+for(let tema in palabrasTema){
+    let btn=document.createElement("button");
+    btn.textContent=tema;
+    btn.className="temaBtn";
+    btn.onclick=function(){
+        temaSeleccionado=tema;
+        palabraDelTema=palabrasTema[temaSeleccionado][Math.floor(Math.random()*palabrasTema[temaSeleccionado].length)];
+        divTemas.style.display="none";
+        document.getElementById("setup").style.display="block";
+    };
+    if(contador<10) fila1.appendChild(btn);
+    else fila2.appendChild(btn);
+    contador++;
+}
+
+const startBtn=document.getElementById('startBtn');
+const turnoBtn=document.getElementById('turnoBtn');
+const jugadorInput=document.getElementById('jugadorActual');
+const numeroInput=document.getElementById('numerojugadores');
+const siguienteBtn=document.getElementById('siguienteBtn');
+const terminarBtn=document.getElementById('terminarBtn');
+
+function iniciarJuego(){
+    numerojugadores=parseInt(numeroInput.value);
+    if(!numerojugadores || numerojugadores<1) return alert("Número inválido");
+    valores=Array(numerojugadores).fill(false);
+    aleatorio=Math.floor(Math.random()*numerojugadores);
+    valores[aleatorio]=true;
+    startBtn.style.display='none';
+    numeroInput.style.display='none';
+    document.getElementById('turno').style.display='block';
+    document.getElementById('output').style.display='none';
+}
+
+function mostrarTurno(){
+    let jugador=parseInt(jugadorInput.value);
+    if(!jugador || jugador<1 || jugador>numerojugadores) return alert("Número de jugador inválido");
+    if(valores[jugador-1]) alert("¡Eres el impostor!");
+    else alert("El tema es: "+palabraDelTema);
+    document.getElementById('output').style.display='block';
+}
+
+function siguienteJugador(){
+    jugadorInput.value='';
+    document.getElementById('output').style.display='none';
+}
+
+function terminarJuego(){
+    document.getElementById('turno').style.display='none';
+    document.getElementById('output').style.display='none';
+    numeroInput.value=''; jugadorInput.value='';
+    document.getElementById('setup').style.display='none';
+    divTemas.style.display='flex';
+}
+
+startBtn.onclick=iniciarJuego;
+turnoBtn.onclick=mostrarTurno;
+siguienteBtn.onclick=siguienteJugador;
+terminarBtn.onclick=terminarJuego;
+
+numeroInput.addEventListener('keydown',function(event){ if(event.key==="Enter") iniciarJuego(); });
+jugadorInput.addEventListener('keydown',function(event){ if(event.key==="Enter") mostrarTurno(); });
+</script>
+
+</body>
+</html>
